@@ -1,0 +1,21 @@
+{
+  "name": "Coliseu",
+  "version": "2.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.9.4",
+    "mongoose": "^3.8.16",
+    "ytdl-core": "^0.2.4",
+    "apn": "^1.6.2",
+    "slugify": "^0.1.0",
+    "bluebird": "^2.3.2",
+    "config": "^1.2.1",
+    "connect-mongo": "^0.4.1"
+  }
+}
