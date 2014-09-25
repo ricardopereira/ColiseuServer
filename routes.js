@@ -4,15 +4,15 @@ var app = require("./app.js");
 var fs = require("fs");
 
 // Loader service
-var service = require('./service');
+var ctrl = require('./controller');
 
 app.route('/')
-  .get(function(req, res) {
+  .get(function (req, res) {
     res.send('Coliseu')
 });
 
 app.route('/api/submit')
-  .get(function(req, res, next) {
+  .get(function (req, res, next) {
 
     var url = (req.query && req.query.url) || //http://localhost:9000/api/submit?url=12
       (req.headers['url']); //Headers values
@@ -21,14 +21,14 @@ app.route('/api/submit')
       (req.headers['token']); //Headers values
 
     //http://localhost:9000/api/submit?url=http://youtu.be/ufgjGSjM97g&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
-    console.log('- NEW REQUEST -');
+    console.log('- REQUEST: Submit -');
     console.log('url: ' + url);
     console.log('token: ' + token);
 
     if (url && token) {
       // Validate url + Start downloading: http://localhost:9000/api/submit?url=http://youtu.be/ufgjGSjM97g
       if (url && /^[a-z]+:\/\//i.test(url)) {
-        service.load(url,token);
+        ctrl.submit(url,token);
         res.send('Success');
       }
       else
@@ -39,23 +39,31 @@ app.route('/api/submit')
 });
 
 app.route('/api/load')
-  .get(function(req, res, next) {
+  .get(function (req, res, next) {
 
-    //http://localhost:9000/api/load?file=Cool-Kids-Echosmith-(lyrics).mp3
     var file = (req.query && req.query.file) ||
       (req.headers['file']);
 
-    console.log('try loading: '+file);
+    var token = (req.query && req.query.token) ||
+      (req.headers['token']);
 
-    if (file) {
-      res.download(__dirname + '/' + file,file);
+    //http://localhost:9000/api/load?file=Cool-Kids-Echosmith-(lyrics).mp3&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    console.log('- REQUEST: Load -');
+    console.log('file: ' + file);
+    console.log('token: ' + token);
+
+    if (file && token) {
+      res.download(__dirname + '/' + file, file, function(err) {
+        if (err) { return res.end('No file', 400) }
+        ctrl.done(file, token);
+      });
     }
     else
       res.end('Undefined', 400);
 })
 
 app.route('/api/loadStream')
-  .get(function(req, res, next) {
+  .get(function (req, res, next) {
 
     //http://localhost:9000/api/loadStream?file=Cool-Kids-Echosmith-(lyrics).mp3
     var file = (req.query && req.query.file) ||
@@ -69,7 +77,7 @@ app.route('/api/loadStream')
         var reader = fs.createReadStream(__dirname + '/' + file);
         reader.pipe(res);
         reader.on('error', function() {
-          res.end('Internal server error', 400);
+          res.end('No file', 400);
         })
       } catch (err) {
         res.end('Internal server error', 400);
@@ -78,3 +86,17 @@ app.route('/api/loadStream')
     else
       res.end('Undefined', 400);
 })
+
+app.route('/api/ready')
+  .get(function (req, res, next) {
+
+    //http://localhost:9000/api/ready?token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    var token = (req.query && req.query.token) ||
+      (req.headers['token']);
+
+    if (token) {
+      ctrl.sendReadyList(res, token)
+    }
+    else
+      res.end('Undefined', 400);
+  });

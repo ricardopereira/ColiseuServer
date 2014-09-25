@@ -9,9 +9,9 @@ var SubmitSchema = new Schema({
   url: String,
   title: String,
   image: String,
+  filename: String,
   converted: Boolean,
-  downloaded: Boolean,
-  done: Number
+  downloaded: Boolean
 });
 
 module.exports = mongoose.model('Submit', SubmitSchema);

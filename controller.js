@@ -10,7 +10,7 @@ var Submits = require('./model/submit.model');
 
 var notify = require('./notify');
 
-module.exports.load = function (url, device) {
+module.exports.submit = function (url, device) {
 
   if (!url) return;
 
@@ -19,9 +19,9 @@ module.exports.load = function (url, device) {
     console.log(new Date + ': Start extracting audio from video');
     //FLV -acodec copy destination
     //MP4 = ffmpeg -y -i source -f mp3 -vn -sn destination
-    var filename = slugify(title)+'.mp3';
+    var fileName = slugify(title)+'.mp3';
 
-    var ffmpeg = spawn('ffmpeg', ['-y', '-i', videoId, '-f', 'mp3', '-vn', '-sn', filename]);
+    var ffmpeg = spawn('ffmpeg', ['-y', '-i', videoId, '-f', 'mp3', '-vn', '-sn', fileName]);
 
     ffmpeg.stdout.on('data', function (buf) {
 
@@ -37,13 +37,13 @@ module.exports.load = function (url, device) {
       // Converted!
       if (code == 0)
         Submits.findOneAndUpdate({ video_id: videoId, device: device }, 
-          { converted: true }, function (err, submit) {
+          { converted: true, filename: fileName }, function (err, submit) {
             if (err) return console.error(err.message);
             if (submit)
               removeVideo(__dirname + '/' + videoId);
           });
       // Callback device
-      notify.sendNotification(device, title, filename);
+      notify.sendNotification(device, title, fileName);
     });
   };
 
@@ -93,10 +93,10 @@ module.exports.load = function (url, device) {
   }
 
   // Inline
-  function removeVideo(videoId) {
-    fs.unlink(videoId, function (err) {
+  function removeVideo(filePath) {
+    fs.unlink(filePath, function (err) {
       if (err) return console.error(err.message);
-      console.log('Successfully deleted: ' + videoId);
+      console.log('Successfully deleted: ' + filePath);
     });
   }
 
@@ -109,7 +109,7 @@ module.exports.load = function (url, device) {
 
     console.log(timestamp +': '+ info.title);
     console.log(timestamp +': '+ info.video_id);
-    console.log(info.fmt_list);
+    console.log(info);
 
     Submits.where({ video_id: info.video_id, device: device }).findOne(function (err, submit) {
       if (err) return console.error(err.message);
@@ -138,4 +138,43 @@ module.exports.load = function (url, device) {
     });
 
   });
+}
+
+module.exports.done = function (fileName, device) {
+
+  // Inline
+  function removeAudio(filePath) {
+    fs.unlink(filePath, function (err) {
+      if (err) return console.error(err.message);
+      console.log('Successfully deleted: ' + filePath);
+    });
+  }
+
+  Submits.findOneAndRemove({ device: device, filename: fileName }, 
+    function (err) {
+      if (err) return console.error(err.message);
+      // Check if is safe to remove cached file
+      Submits.find({ filename: fileName })
+        .count(function (err, count) {
+          if (err) return console.error(err.message);
+          if (count == 0) {
+            removeAudio(__dirname + '/' + fileName)
+          }
+        })
+    });
+}
+
+module.exports.sendReadyList = function (res, device) {
+  if (!res) return res.send(500);
+
+  Submits.find({ device: device, converted: true })
+    .select('title filename video_id image')
+    .exec(function (err, submits) {
+    if (err) return console.error(err.message);
+    if (submits) {
+      res.json(submits);
+    }
+    else
+      res.json([]);
+    });
 }
