@@ -109,7 +109,6 @@ module.exports.submit = function (url, device) {
 
     console.log(timestamp +': '+ info.title);
     console.log(timestamp +': '+ info.video_id);
-    console.log(info);
 
     Submits.where({ video_id: info.video_id, device: device }).findOne(function (err, submit) {
       if (err) return console.error(err.message);
