@@ -6,6 +6,9 @@ var fs = require("fs");
 // Loader service
 var ctrl = require('./controller');
 
+var google = require('googleapis');
+var youtube = google.youtube('v3');
+
 app.route('/')
   .get(function (req, res) {
     res.send('Coliseu')
@@ -99,4 +102,15 @@ app.route('/api/ready')
     }
     else
       res.end('Undefined', 400);
+  });
+
+var API_KEY = 'AIzaSyCN_LwuzAnrY5nzRWOu1_56iBeR513DeKc';
+
+app.route('api/search')
+  .get(function (req, res, next) {
+    // Teste
+    youtube.search.list({ auth: API_KEY, part: 'id', type: 'video', maxResults: 25, q: 'Cool Kids' }, function(err, list) {
+      console.log('Result: ' + (err ? err.message : list));
+    });
+    res.end('Search', 400);
   });
