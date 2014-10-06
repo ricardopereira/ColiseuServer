@@ -111,7 +111,7 @@ app.route('/api/search')
     console.log('- REQUEST: Search -');
     // Teste
     youtube.search.list({ auth: config.get('GAPI.key'), part: 'snippet', type: 'video', q: 'Cool Kids', maxResults: 25 }, function(err, list) {
-      console.log('Result: ' + (err ? err.message : list));
+      console.log('Result: ' + (err ? err.message : list.items));
     });
     res.end('Search: success', 400);
   });
