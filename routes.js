@@ -6,8 +6,10 @@ var fs = require("fs");
 // Loader service
 var ctrl = require('./controller');
 
+// Teste
 var google = require('googleapis');
 var youtube = google.youtube('v3');
+var config = require('config');
 
 app.route('/')
   .get(function (req, res) {
@@ -104,13 +106,12 @@ app.route('/api/ready')
       res.end('Undefined', 400);
   });
 
-var API_KEY = 'AIzaSyCN_LwuzAnrY5nzRWOu1_56iBeR513DeKc';
-
-app.route('api/search')
+app.route('/api/search')
   .get(function (req, res, next) {
+    console.log('- REQUEST: Search -');
     // Teste
-    youtube.search.list({ auth: API_KEY, part: 'id', type: 'video', maxResults: 25, q: 'Cool Kids' }, function(err, list) {
+    youtube.search.list({ auth: config.get('GAPI.key'), part: 'snippet', type: 'video', q: 'Cool Kids', maxResults: 25 }, function(err, list) {
       console.log('Result: ' + (err ? err.message : list));
     });
-    res.end('Search', 400);
+    res.end('Search: success', 400);
   });
