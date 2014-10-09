@@ -21,7 +21,7 @@ module.exports.submit = function (url, device) {
     //MP4 = ffmpeg -y -i source -f mp3 -vn -sn destination
     var fileName = slugify(title)+'.mp3';
 
-    var ffmpeg = spawn('ffmpeg', ['-y', '-i', videoId, '-f', 'mp3', '-vn', '-sn', fileName]);
+    var ffmpeg = spawn('ffmpeg', ['-y', '-i', videoId, '-f', 'mp3', '-vn', '-sn', fileName, '-metadata', 'title='+title]);
 
     ffmpeg.stdout.on('data', function (buf) {
 
