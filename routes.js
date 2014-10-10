@@ -92,10 +92,10 @@ app.route('/api/loadStream')
       res.end('Undefined', 400);
 })
 
-app.route('/api/ready')
+app.route('/api/notifications')
   .get(function (req, res, next) {
 
-    //http://localhost:9000/api/ready?token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    //http://localhost:9000/api/notifications?token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
     var token = (req.query && req.query.token) ||
       (req.headers['token']);
 
@@ -108,10 +108,31 @@ app.route('/api/ready')
 
 app.route('/api/search')
   .get(function (req, res, next) {
+
+    //http://localhost:9000/api/search?q=cool+kids
+    var q = (req.query && req.query.q) ||
+      (req.headers['q']);
+
     console.log('- REQUEST: Search -');
+    console.log('Query: ', q);
     // Teste
-    youtube.search.list({ auth: config.get('GAPI.key'), part: 'snippet', type: 'video', q: 'Cool Kids', maxResults: 25 }, function(err, list) {
-      console.log('Result: ' + (err ? err.message : list.items));
+    youtube.search.list({ auth: config.get('GAPI.key'), part: 'snippet', type: 'video', q: q, maxResults: 25 }, function(err, response) {
+
+      if (err) {
+        console.log(err.message);
+      }
+      else {
+        var items = response['items'];
+        var result = []
+
+        console.log('Found: ', items.length);
+        for (var i=0; i<items.length; i++) {
+          result[i] = {}
+          result[i].videoId = items[i].id.videoId;
+          result[i].title = items[i].snippet.title;
+        }
+
+        res.json(result);
+      }
     });
-    res.end('Search: success', 400);
   });
