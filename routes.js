@@ -25,7 +25,7 @@ app.route('/api/submit')
     var token = (req.query && req.query.token) || //http://localhost:9000/api/submit?url=12
       (req.headers['token']); //Headers values
 
-    //http://localhost:9000/api/submit?url=http://youtu.be/ufgjGSjM97g&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    //http://localhost:9000/api/submit?url=http://youtu.be/1lyu1KKwC74&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
     console.log('- REQUEST: Submit -');
     console.log('url: ' + url);
     console.log('token: ' + token);
@@ -91,6 +91,12 @@ app.route('/api/loadStream')
     else
       res.end('Undefined', 400);
 })
+
+app.route('/api/ignore')
+  .get(function (req, res, next) {
+    // ToDo
+    res.end('Undefined', 400);
+  });
 
 app.route('/api/notifications')
   .get(function (req, res, next) {
