@@ -4,11 +4,10 @@ var fs = require('fs');
 var ytdl = require('ytdl-core');
 var spawn = require('child_process').spawn;
 var slugify = require('slugify');
+var notify = require('./notify');
 
 // Data
 var Submits = require('./model/submit.model');
-
-var notify = require('./notify');
 
 module.exports.submit = function (url, device) {
 
@@ -18,7 +17,7 @@ module.exports.submit = function (url, device) {
   function convert(videoId, title) {
     console.log(new Date + ': Start extracting audio from video');
     //FLV -acodec copy destination
-    //MP4 = ffmpeg -y -i source -f mp3 -vn -sn destination
+    //MP4 = ffmpeg -y -i source -f mp3 -metadata title="title" -vn -sn destination
     var fileName = slugify(title)+'.mp3';
 
     var ffmpeg = spawn('ffmpeg', ['-y', '-i', videoId, '-f', 'mp3', '-metadata', 'title='+title, '-vn', '-sn', fileName]);

@@ -5,17 +5,14 @@ var fs = require("fs");
 
 // Loader service
 var ctrl = require('./controller');
-
-// Teste
-var google = require('googleapis');
-var youtube = google.youtube('v3');
-var config = require('config');
+var search = require('./search');
 
 app.route('/')
   .get(function (req, res) {
     res.send('Coliseu')
 });
 
+// SUBMIT
 app.route('/api/submit')
   .get(function (req, res, next) {
 
@@ -25,7 +22,7 @@ app.route('/api/submit')
     var token = (req.query && req.query.token) || //http://localhost:9000/api/submit?url=12
       (req.headers['token']); //Headers values
 
-    //http://localhost:9000/api/submit?url=http://youtu.be/1lyu1KKwC74&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    //http://localhost:9000/api/submit?url=http://youtu.be/J3UjJ4wKLkg&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
     console.log('- REQUEST: Submit -');
     console.log('url: ' + url);
     console.log('token: ' + token);
@@ -34,15 +31,16 @@ app.route('/api/submit')
       // Validate url + Start downloading: http://localhost:9000/api/submit?url=http://youtu.be/ufgjGSjM97g
       if (url && /^[a-z]+:\/\//i.test(url)) {
         ctrl.submit(url,token);
-        res.send('Success');
+        res.send('Success', 400);
       }
       else
         res.end('Not found', 404);
     }
     else
-      res.end('Undefined', 400);
+      res.end('Undefined', 501);
 });
 
+// LOAD
 app.route('/api/load')
   .get(function (req, res, next) {
 
@@ -67,6 +65,7 @@ app.route('/api/load')
       res.end('Undefined', 400);
 })
 
+// LOADSTREAM
 app.route('/api/loadStream')
   .get(function (req, res, next) {
 
@@ -92,12 +91,26 @@ app.route('/api/loadStream')
       res.end('Undefined', 400);
 })
 
+// IGNORE
 app.route('/api/ignore')
   .get(function (req, res, next) {
-    // ToDo
-    res.end('Undefined', 400);
+
+    var file = (req.query && req.query.file) ||
+      (req.headers['file']);
+
+    var token = (req.query && req.query.token) ||
+      (req.headers['token']);
+
+    //http://localhost:9000/api/ignore?file=Cool-Kids-Echosmith-(lyrics).mp3&token=7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    console.log('- REQUEST: Ignore -');
+    console.log('file: ' + file);
+    console.log('token: ' + token);
+
+    ctrl.done(file, token);
+    res.end('Success', 400);
   });
 
+// NOTIFICATIONS
 app.route('/api/notifications')
   .get(function (req, res, next) {
 
@@ -112,33 +125,18 @@ app.route('/api/notifications')
       res.end('Undefined', 400);
   });
 
+// SEARCH
 app.route('/api/search')
   .get(function (req, res, next) {
 
-    //http://localhost:9000/api/search?q=cool+kids
+    //http://localhost:9000/api/search?q=lana+del+rey+ride
     var q = (req.query && req.query.q) ||
       (req.headers['q']);
 
     console.log('- REQUEST: Search -');
     console.log('Query: ', q);
-    // Teste
-    youtube.search.list({ auth: config.get('GAPI.key'), part: 'snippet', type: 'video', q: q, maxResults: 25 }, function(err, response) {
 
-      if (err) {
-        console.log(err.message);
-      }
-      else {
-        var items = response['items'];
-        var result = []
-
-        console.log('Found: ', items.length);
-        for (var i=0; i<items.length; i++) {
-          result[i] = {}
-          result[i].videoId = items[i].id.videoId;
-          result[i].title = items[i].snippet.title;
-        }
-
-        res.json(result);
-      }
+    search.get(q, function (items) {
+      res.json(items);
     });
   });
