@@ -31,13 +31,13 @@ app.route('/api/submit')
       // Validate url + Start downloading: http://localhost:9000/api/submit?url=http://youtu.be/ufgjGSjM97g
       if (url && /^[a-z]+:\/\//i.test(url)) {
         ctrl.submit(url,token);
-        res.send('Success', 400);
+        res.send('Success', 200);
       }
       else
         res.end('Not found', 404);
     }
     else
-      res.end('Undefined', 501);
+      res.end('Bad request', 400);
 });
 
 // LOAD
@@ -62,7 +62,7 @@ app.route('/api/load')
       });
     }
     else
-      res.end('Undefined', 400);
+      res.end('Bad request', 400);
 })
 
 // LOADSTREAM
@@ -84,11 +84,11 @@ app.route('/api/loadStream')
           res.end('No file', 400);
         })
       } catch (err) {
-        res.end('Internal server error', 400);
+        res.end('Internal server error', 501);
       }
     }
     else
-      res.end('Undefined', 400);
+      res.end('Bad request', 400);
 })
 
 // IGNORE
@@ -107,7 +107,7 @@ app.route('/api/ignore')
     console.log('token: ' + token);
 
     ctrl.done(file, token);
-    res.end('Success', 400);
+    res.end('Success', 200);
   });
 
 // NOTIFICATIONS
@@ -122,7 +122,7 @@ app.route('/api/notifications')
       ctrl.sendReadyList(res, token)
     }
     else
-      res.end('Undefined', 400);
+      res.end('Bad request', 400);
   });
 
 // SEARCH
