@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -16,7 +17,6 @@
     "slugify": "^0.1.0",
     "bluebird": "^2.3.2",
     "config": "^1.2.1",
-    "connect-mongo": "^0.4.1",
     "googleapis": "^1.0.16"
   }
 }
