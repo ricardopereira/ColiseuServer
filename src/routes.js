@@ -20,8 +20,8 @@ app.route('/api/convert')
   //http://localhost:9000/api/convert
   .get(function (req, res, next) {
     // HTTP Headers
-    var url = req.headers['X-Coliseu-URL'] //Ex: http://youtu.be/J3UjJ4wKLkg&token=
-    var device = req.headers['X-Coliseu-Device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    var url = req.headers['x-coliseu-url'] //Ex: http://youtu.be/J3UjJ4wKLkg&token=
+    var device = req.headers['x-coliseu-device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
 
     console.log('REQ: Convert video '+url+' for device '+device)
 
@@ -45,8 +45,8 @@ app.route('/api/load')
   //http://localhost:9000/api/load
   .get(function (req, res, next) {
     // HTTP Headers
-    var file = req.headers['X-Coliseu-File'] //Ex: Cool-Kids-Echosmith-(lyrics).mp3
-    var token = req.headers['X-Colisey-Device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    var file = req.headers['x-coliseu-file'] //Ex: Cool-Kids-Echosmith-(lyrics).mp3
+    var token = req.headers['x-coliseu-device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
 
     console.log('REQ: Load file '+file+' for device '+token)
 
@@ -95,8 +95,8 @@ app.route('/api/ignore')
   //http://localhost:9000/api/ignore
   .get(function (req, res, next) {
     // HTTP Headers
-    var file = req.headers['X-Coliseu-File'] //Ex: Cool-Kids-Echosmith-(lyrics).mp3
-    var device = req.headers['X-Coliseu-Device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    var file = req.headers['x-coliseu-file'] //Ex: Cool-Kids-Echosmith-(lyrics).mp3
+    var device = req.headers['x-coliseu-device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
 
     console.log('REQ: Ignore file '+file+' for device '+device)
 
@@ -109,7 +109,7 @@ app.route('/api/notifications')
   //http://localhost:9000/api/notifications
   .get(function (req, res, next) {
     // HTTP Headers
-    var device = req.headers['X-Coliseu-Device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
+    var device = req.headers['x-coliseu-device'] //Ex: 7bc0cb495834a47947e436b837ba7443bd8d198f2257f32c7371a400435c5206
 
     console.log('REQ: Notifications for device '+device)
 
@@ -126,11 +126,16 @@ app.route('/api/search')
   //http://localhost:9000/api/search
   .get(function (req, res, next) {
     // HTTP Headers
-    var q = req.headers['X-Coliseu-Query'] //Ex: lana+del+rey+ride
+    var q = req.headers['x-coliseu-query'] //Ex: lana+del+rey+ride
 
     console.log('REQ: Search with query - '+q)
 
-    search.get(q, function (items) {
-      res.json(items)
-    })
+    if (q) {
+      search.get(q, function (items) {
+        res.json(items)
+      })
+    }
+    else {
+      res.status(400).send('Bad Request')
+    }
   })

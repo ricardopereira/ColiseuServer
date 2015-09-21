@@ -1,24 +1,21 @@
 # Coliseu 2.0 b1
 
+### Manual
+
 Build image with:
 
-    make node
+  `npm install`
 
 Run:
 
-    make start
+  `node app.js`
 
+### Docker
 
-# Install MongoDB
+Build image with:
 
-This container needs MongoDB:
+  `make node`
 
-    docker pull dockerfile/mongodb
+Run:
 
-Running MongoDB:
-
-    docker run -d -p 27017:27017 -v /srv/db/:/data/db --name mongodb dockerfile/mongodb
-
-Access MongoDB collections:
-
-    docker run -it --rm --link mongodb:mongodb dockerfile/mongodb bash -c 'mongo --host mongodb'
+  `make start`
