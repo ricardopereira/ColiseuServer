@@ -100,8 +100,13 @@ app.route('/api/ignore')
 
     console.log('REQ: Ignore file '+file+' for device '+device)
 
-    ctrl.done(file, device)
-    res.status(200).send('Success')
+    if (file && device) {
+      ctrl.done(file, device)
+      res.status(200).send('Success')
+    }
+    else {
+      res.status(400).send('Bad Request')
+    }
   });
 
 // NOTIFICATIONS
@@ -131,7 +136,7 @@ app.route('/api/search')
     console.log('REQ: Search with query - '+q)
 
     if (q) {
-      search.get(q, function (items) {
+      search.get(q, function(items) {
         res.json(items)
       })
     }

@@ -22,16 +22,17 @@ module.exports.get = function(query, done) {
     }
     else {
       var items = response['items']
-      var result = []
 
-      console.log('Found: ', items.length)
-      for (var i=0; i<items.length; i=i+1) {
-        result[i] = {}
-        result[i].videoId = items[i].id.videoId
-        result[i].title = items[i].snippet.title
-      }
+      console.log('Search items: ', items.length)
 
-      done && done(result)
+      var results = items.flatMap(function(item) {
+        var value = {}
+        value.videoId = item.id.videoId
+        value.title = item.snippet.title
+        return [value]
+      })
+
+      done && done(results)
     }
   })
 }

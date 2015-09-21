@@ -31,3 +31,10 @@ module.exports = function(app) {
     app.set('COLISEU_MEDIA', app.get('COLISEU_MEDIA') + '/')
   }
 }
+
+// Extensions
+
+// [B](f: (A) ⇒ [B]): [B]  ; Although the types in the arrays aren't strict (:
+Array.prototype.flatMap = function(lambda) {
+  return Array.prototype.concat.apply([], this.map(lambda))
+}
