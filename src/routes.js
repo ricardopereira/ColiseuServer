@@ -16,8 +16,8 @@ app.route('/')
 });
 
 // SUBMIT
-app.route('/api/convert')
-  //http://localhost:9000/api/convert
+app.route('/api/submit')
+  //http://localhost:9000/api/submit
   .get(function (req, res, next) {
     // HTTP Headers
     var url = req.headers['x-coliseu-url'] //Ex: http://youtu.be/J3UjJ4wKLkg&token=
@@ -63,7 +63,7 @@ app.route('/api/load')
     }
 })
 
-// LOADSTREAM
+// STREAM
 app.route('/api/stream')
   //http://localhost:9000/api/stream
   .get(function (req, res, next) {
@@ -139,6 +139,7 @@ app.route('/api/search')
       search.get(q, function(items) {
         res.json(items)
       })
+      // TODO: Timeout
     }
     else {
       res.status(400).send('Bad Request')
