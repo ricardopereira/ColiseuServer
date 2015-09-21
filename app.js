@@ -2,11 +2,11 @@
 
 var app  = module.exports = require('express')()
 var config = require('config')
-
-var port = process.env.PORT || 9000
+// Setup
+require('./setup')(app)
 
 // API
-require('./routes')
+local('routes')
 
 // Logger
 app.use(function (req, res, next) {
@@ -16,4 +16,8 @@ app.use(function (req, res, next) {
   console.log('%s %s - %s', req.method, req.url, ms)
 })
 
-app.listen(port)
+// Info
+console.log('Coliseu '+app.get('VERSION'))
+console.log(' * Media path: '+app.get('COLISEU_MEDIA'))
+
+app.listen(app.get('PORT'))

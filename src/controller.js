@@ -1,10 +1,17 @@
 'use strict'
 
+var app = application()
 var fs = require('fs')
 var ytdl = require('ytdl-core')
 var spawn = require('child_process').spawn
 var slugify = require('slugify')
-var notify = require('./notify')
+// Local
+var notify = local('notify')
+// Store
+var Datastore = require('nedb')
+var db = {}
+db.submissions = new Datastore(app.get('COLISEU_STORES') + 'submissions')
+db.submissions.loadDatabase()
 
 module.exports.submit = function(url, device) {
   if (!url) {
