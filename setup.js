@@ -3,11 +3,14 @@
 global.__src = __dirname + '/src/'
 
 global.local = function(name) {
-    return require(__src + name);
+    return require(__src + name)
 }
 
+// Logger abstraction
+local('logger')
+
 // Local
-var utils = local('utils')
+var utils = local('utilities')
 
 module.exports = function(app) {
   // Export Application
@@ -19,6 +22,7 @@ module.exports = function(app) {
   // TODO: Check slash delimiter
   app.set('VERSION', 2.0)
   app.set('PORT', process.env.PORT || 9000)
+  app.set('DEBUG', process.env.COLISEU_DEBUG)
 
   app.set('COLISEU_STORES', process.env.COLISEU_STORES || __dirname + '/bin/stores/')
   app.set('COLISEU_MEDIA', process.env.COLISEU_MEDIA || __dirname + '/bin/media/')
@@ -31,6 +35,7 @@ module.exports = function(app) {
     app.set('COLISEU_MEDIA', app.get('COLISEU_MEDIA') + '/')
   }
 }
+
 
 // Extensions
 

@@ -19,124 +19,124 @@ var dir = app.get('COLISEU_MEDIA')
 // Private
 
 function removeVideo(filePath) {
-  fs.unlink(filePath, function (err) {
+  fs.unlink(filePath, function(err) {
     if (err) {
-      return console.error(err.message)
+      return unexpected(err.message)
     }
-    console.log('Successfully deleted: ' + filePath)
-  })
-}
-
-function convert(submitInfo) {
-  console.log(new Date() + ': Start extracting audio from video')
-  //FLV -acodec copy destination
-  //MP4 = ffmpeg -y -i source -f mp3 -metadata title="title" -vn -sn destination
-  var ffmpeg = spawn('ffmpeg', ['-y', '-i', submitInfo.video_id, '-f', 'mp3', '-metadata', 'title='+submitInfo.title, '-vn', '-sn', submitInfo.filename])
-
-  ffmpeg.stdout.on('data', function(buf) {
-
-  });
-
-  ffmpeg.stderr.on('data', function(buf) {
-
-  });
-
-  ffmpeg.on('exit', function(code) {
-    // Finish conversion
-    console.log(new Date() + ': Extracted audio: #' + code)
-    // Converted!
-    if (code === 0) {
-      db.submissions.update({ video_id: submitInfo.video_id, device: submitInfo.device_id },
-        { $set: { converted: true } }, {},
-      function (err, numReplaced) {
-        if (err) {
-          return console.log(err)
-        }
-        // Success
-        if (numReplaced === 1) {
-          removeVideo(dir + submitInfo.video_id)
-        }
-      });
-
-      /*
-      Submits.findOneAndUpdate({ video_id: videoId, device: device },
-        { converted: true, filename: fileName }, function (err, submit) {
-          if (err) {
-            return console.error(err.message)
-          }
-          if (submit) {
-
-          }
-        })
-      */
-    }
-    // Callback device
-    notify.sendNotification(submitInfo)
-  });
-}
-
-function downloadAndConvert(submitInfo) {
-  console.log(new Date + ': Start downloading video')
-
-  var options = {}
-  options.filter = function(format) { return format.container === 'mp4' }
-
-  // Download and Conversion
-  var writeStream = fs.createWriteStream(submitInfo.video_id)
-
-  var readStream = ytdl('http://youtu.be/'+submitInfo.video_id, options)
-  readStream.pipe(writeStream)
-
-  readStream.on('error', function(err) {
-    console.error(err.message)
-  })
-
-  writeStream.on('error', function(err) {
-    console.error(err.message)
-  })
-
-  writeStream.on('finish', function() {
-    // Downloaded!
-    /*
-    Submits.findOneAndUpdate({  },
-      { downloaded: true }, function (err, submit) {
-        if (err) {
-          return console.error(err.message)
-        }
-      })
-    */
-
-    db.submissions.update({ video_id: submitInfo.video_id, device: submitInfo.device_id },
-      { $set: { downloaded: true } }, {},
-    function (err, numReplaced) {
-      if (err) {
-        return console.log(err)
-      }
-    });
-    // Convert do audio
-    convert(submitInfo)
-  })
-}
-
-function checkVideo(submitInfo) {
-  fs.exists(__dirname + '/' + submitInfo.video_id, function(exists) {
-    // Check if Audio file is created or correct
-    if (exists) {
-      convert(submitInfo)
-    }
-    else {
-      downloadAndConvert(submitInfo)
-    }
+    debug('Successfully deleted ' + filePath)
   })
 }
 
 function removeAudio(filePath) {
-  fs.unlink(filePath, function (err) {
+  fs.unlink(filePath, function(err) {
     if (err) {
-      return console.error(err.message)
+      return unexpected(err.message)
     }
-    console.log('Successfully deleted: ' + filePath)
+    debug('Successfully deleted ' + filePath)
   });
+}
+
+function extractAudio(submitInfo, completion) {
+  var input = dir + submitInfo.video_id
+  var output = dir + submitInfo.filename
+
+  debug('Input: '+input)
+  debug('Output: '+output)
+  debug('Start extracting audio \"'+submitInfo.filename+'\" from video \"'+submitInfo.video_id+'\"')
+
+  //FLV -acodec copy destination
+  //MP4 = ffmpeg -y -i source -f mp3 -metadata title="title" -vn -sn destination
+  var ffmpeg = spawn('ffmpeg', ['-y', '-i', input, '-f', 'mp3', '-metadata', 'title='+submitInfo.title, '-vn', '-sn', output])
+
+  // TODO: Log
+  ffmpeg.stdout.on('data', function(buf) { })
+  ffmpeg.stderr.on('data', function(buf) { })
+
+  ffmpeg.on('exit', function(code) {
+    // Converted!
+    if (code === 0) {
+      debug('Extracted audio successfully')
+      // Finish extraction!
+      completion(submitInfo)
+    }
+    else {
+      debug('ffmpeg error: '+code)
+    }
+  })
+}
+
+function downloadVideo(submitInfo, completion) {
+  debug('Start downloading video '+submitInfo.video_id)
+
+  var options = {}
+  options.filter = function(format) {
+      return format.container === 'mp4'
+    }
+
+  // Download
+  var writeStream = fs.createWriteStream(dir + submitInfo.video_id)
+  var readStream = ytdl('http://youtu.be/'+submitInfo.video_id, options)
+  readStream.pipe(writeStream)
+
+  readStream.on('error', function(err) {
+    unexpected(err.message)
+  })
+  writeStream.on('error', function(err) {
+    unexpected(err.message)
+  })
+  writeStream.on('finish', function() {
+    // Downloaded!
+    completion(submitInfo)
+  })
+}
+
+function onExtractAudioComplete(submitInfo) {
+  // On completion
+  db.submissions.update({ video_id: submitInfo.video_id, device_id: submitInfo.device_id },
+    { $set: { converted: true } }, {},
+  function (err, numReplaced) {
+    if (err) {
+      return unexpected(err)
+    }
+    // Success
+    if (numReplaced === 1) {
+      removeVideo(dir + submitInfo.video_id)
+    }
+  });
+  // Callback device
+  notify.sendNotification(submitInfo)
+}
+
+function checkVideo(submitInfo) {
+  fs.exists(dir + submitInfo.filename, function(exists) {
+    if (!exists) {
+      // TODO: if file exists but there's no submission
+    }
+  })
+
+  // TODO: doesn't mean that the file isn't corrupt
+  fs.exists(dir + submitInfo.video_id, function(exists) {
+    // Check if Audio file is created or correct
+    if (exists) {
+      debug('Extract method')
+      extractAudio(submitInfo, onExtractAudioComplete)
+    }
+    else {
+      debug('Download method')
+      downloadVideo(submitInfo, function(submitInfo) {
+        // On completion
+        db.submissions.update({ video_id: submitInfo.video_id, device: submitInfo.device_id },
+          { $set: { downloaded: true } }, {},
+        function (err, numReplaced) {
+          if (err) {
+            return unexpected(err)
+          }
+        });
+        // Convert to audio
+        extractAudio(submitInfo, onExtractAudioComplete)
+      })
+    }
+  })
 }
 
 
@@ -147,11 +147,9 @@ module.exports.submit = function(url, device) {
     return
   }
 
-  console.log(new Date() +': Start downloading '+ url)
-
   ytdl.getInfo(url, function (err, info) {
     if (err) {
-      return console.error(err.message)
+      return unexpected(err.message)
     }
 
     var submitInfo = {
@@ -166,60 +164,26 @@ module.exports.submit = function(url, device) {
       downloaded: false
     }
 
-    console.log('Received submit for '+submitInfo.video_id)
-
     // Find with the same video id
     db.submissions.find({ video_id: submitInfo.video_id, device_id: submitInfo.device_id }, function (err, docs) {
       if (err) {
-        return console.log(err)
+        return unexpected(err)
       }
 
       // New
       if (docs.length === 0) {
         db.submissions.insert(submitInfo, function(err, doc) {
-          console.log('Submission created: '+doc._id);
+          debug('Submission create with id '+doc._id)
           // Check if video has been downloaded
           checkVideo(doc)
         })
       }
       else {
-        console.log('Submission already exist with id '+docs[0]._id)
+        debug('Submission already exist with id '+docs[0]._id)
         // Exist, then check if video has been downloaded
         checkVideo(docs[0])
       }
     })
-
-
-    /*
-    Submits.where({ video_id: info.video_id, device: device }).findOne(function(err, submit) {
-      if (err) {
-        return console.error(err.message)
-      }
-      if (submit) {
-        console.log('Exist: ' + info.video_id)
-      }
-      else {
-        // Add to Database
-        Submits.create({ video_id: info.video_id,
-          device: device,
-          title: info.title,
-          image: info.thumbnail_url,
-          url: url,
-          converted: false
-        }, function(err, submit) {
-          if (err) {
-            return console.error(err.message)
-          }
-          if (submit) {
-            console.log('Saved: ' + info.video_id)
-            // Exist, then check if video has been downloaded
-            checkVideo(info.video_id, info.title)
-          }
-        })
-      }
-    })
-    */
-
   });
 };
 
@@ -248,6 +212,7 @@ module.exports.done = function (fileName, device) {
 
 module.exports.sendReadyList = function (res, device) {
   if (!res) {
+    // TODO
     return res.send(500)
   }
 

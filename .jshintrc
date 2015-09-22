@@ -16,7 +16,7 @@
   "expr":          true,
   "forin":         false,
   "funcscope":     true,
-  "globals":       {"__src": true, "local": true, "application": true},
+  "globals":       {"__src": true, "local": true, "application": true, "debug": true, "unexpected": true},
   "globalstrict":  false,
   "immed":         true,
   "indent":        2,

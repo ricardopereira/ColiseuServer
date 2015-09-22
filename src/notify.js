@@ -4,7 +4,7 @@ var apn = require('apn')
 var config = require('config')
 
 module.exports.sendNotification = function(submitInfo) {
-  console.log(new Date + ': Notify device ' + submitInfo.device_id)
+  debug('Notify device ' + submitInfo.device_id)
 
   var options = {
     cert: config.get('APNS.certificate'),

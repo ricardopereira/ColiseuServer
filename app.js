@@ -18,6 +18,9 @@ app.use(function (req, res, next) {
 
 // Info
 console.log('Coliseu '+app.get('VERSION'))
+if (process.env.COLISEU_DEBUG == 1) {
+  console.log(' * Debug mode')
+}
 console.log(' * Media path: '+app.get('COLISEU_MEDIA'))
 
 app.listen(app.get('PORT'))

@@ -18,12 +18,12 @@ module.exports.get = function(query, done) {
     videoDuration: 'short' }, function(err, response) {
 
     if (err) {
-      console.log(err.message)
+      unexpected(err.message)
     }
     else {
       var items = response['items']
 
-      console.log('Search items: ', items.length)
+      debug('Search items: ', items.length)
 
       var results = items.flatMap(function(item) {
         var value = {}
